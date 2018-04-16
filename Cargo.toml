@@ -4,3 +4,5 @@ version = "0.1.0"
 authors = ["Hiruna Jayamanne <hirunav2@gmail.com>"]
 
 [dependencies]
+tokio = "0.1"
+futures-await = "0.1"
