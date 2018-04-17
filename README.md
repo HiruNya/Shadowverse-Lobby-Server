@@ -13,7 +13,7 @@ The Client is not yet available and therefore this server is pretty much useless
 ## Host your own server
 You can host your own server by either:
 - [Downloading the program in the Release section](https://github.com/HiruNya/Shadowverse-Lobby-Server/releases)
-- Building the server from the source
+- [Building the server from the source](https://github.com/HiruNya/Shadowverse-Lobby-Server#how-to-build-from-source)
 
 ### How to build from source
 To do this both the Rust compiler (with the nightly toolchain) and the package manager, Cargo, are required.
