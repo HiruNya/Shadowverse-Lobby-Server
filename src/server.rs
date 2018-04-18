@@ -1,11 +1,8 @@
 /// All the networking code will be in this module
 use futures::prelude::*;
-use std::net::IpAddr::*;
-use std::io::{BufReader, Result, Error, ErrorKind};
+use std::io::Result;
 use std::sync::{Arc, Mutex};
-use std::time::{Instant, Duration};
 use tokio::net::TcpStream;
-use tokio::timer::Delay;
 use tokio::prelude::*;
 use tokio_io::io::{read_until, write_all, ReadHalf, WriteHalf};
 
@@ -17,6 +14,7 @@ type Reader = ReadHalf<TcpStream>;
 
 #[async]
 pub fn on_message(sock: TcpStream, data: Data) -> Result<()> {
+    use std::net::IpAddr::*;
     let address = match sock.peer_addr() {
         Ok(e) => e.ip(),
         Err(_) => return Ok(()),
@@ -37,9 +35,6 @@ pub fn on_message(sock: TcpStream, data: Data) -> Result<()> {
     match request {
         GetCache  => {await!(send_cache(writer, data));},
         UpdateGame(game) => {
-            use std::mem::drop;
-            drop(writer);
-            drop(reader);
             let previous_state = data.lock().unwrap().games.insert(address.clone(),
                        Game::new(game.name,
                                  game.author,
@@ -48,9 +43,19 @@ pub fn on_message(sock: TcpStream, data: Data) -> Result<()> {
             match previous_state {
                 Some(_) => {},
                 None => {
+                    use std::time::{Instant, Duration};
+                    use tokio::{
+                        spawn,
+                        timer::Delay,
+                    };
                     let time = Instant::now() + Duration::from_secs(30);
-                    await!(Delay::new(time));
-                    data.lock().unwrap().remove_game(&address);
+                    let task = Delay::new(time)
+                        .map_err(|_|println!("ErrorL Delay failed."))
+                        .and_then(move|_| {
+                            data.lock().unwrap().remove_game(&address);
+                            Ok(())
+                        });
+                    spawn(task);
                 }
             }
         },
@@ -61,6 +66,8 @@ pub fn on_message(sock: TcpStream, data: Data) -> Result<()> {
 
 #[async]
 fn read_message(reader: Reader) -> Result<(Reader, parse::Request)> {
+    use std::io::{Error, ErrorKind};
+    use std::io::BufReader;
     let buf: Vec<u8> = Vec::new();
     let read = BufReader::new(reader);
     let (read, buf) = await!(read_until(read, b'\n', buf))?;
