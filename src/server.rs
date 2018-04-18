@@ -37,6 +37,9 @@ pub fn on_message(sock: TcpStream, data: Data) -> Result<()> {
     match request {
         GetCache  => {await!(send_cache(writer, data));},
         UpdateGame(game) => {
+            use std::mem::drop;
+            drop(writer);
+            drop(reader);
             let previous_state = data.lock().unwrap().games.insert(address.clone(),
                        Game::new(game.name,
                                  game.author,
