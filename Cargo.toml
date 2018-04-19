@@ -1,6 +1,6 @@
 [package]
 name = "Shadowverse-Lobby-Server"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Hiruna Jayamanne <hirunav2@gmail.com>"]
 
 [dependencies]

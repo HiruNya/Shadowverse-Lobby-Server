@@ -14,6 +14,8 @@ pub fn get_request(req: &[u8]) -> Result<Request, serde_json::Error> {
 }
 
 pub fn make_cache(data: &Vec<Game>) -> String {
-    serde_json::to_string(data)
-        .expect("Error caching the game data.")
+    let mut cache = serde_json::to_string(data)
+        .expect("Error caching the game data.");
+    cache.push('\n');
+    cache
 }
